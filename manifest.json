@@ -1,0 +1,21 @@
+{
+    "manifest_version": 3,
+    "name": "CheerPop! – Pop-ups to Make You Smile",
+    "version": "1.0",
+    "description": "Boost your mood with cheerful pop-ups of jokes, facts, and fun reminders throughout your workday.",
+    "permissions": ["storage", "alarms", "notifications"],
+    "host_permissions": [
+      "https://zenquotes.io/*",
+      "https://v2.jokeapi.dev/*",
+      "https://uselessfacts.jsph.pl/*"
+    ],
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": "icon.png"
+    },
+    "background": {
+      "service_worker": "background.js"
+    },
+    "options_page": "popup.html"
+  }
+  

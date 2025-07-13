@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CheerPop!</title>
+  <style>
+    :root {
+      --sunset-bg: #FFF8E1;
+      --sunset-accent: #FFD966;
+      --sunset-text: #5C3A00;
+      --sunset-card: #FFF3CD;
+      --sunset-hover: #FFE699;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      margin: 0;
+      padding: 15px;
+      width: 320px;
+      background-color: var(--sunset-bg);
+      color: var(--sunset-text);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      color: var(--sunset-text);
+    }
+
+    .tagline {
+      font-size: 13px;
+      color: var(--sunset-text);
+      margin-top: 4px;
+    }
+
+    .section {
+      background-color: var(--sunset-card);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0;
+      right: 0; bottom: 0;
+      background-color: #ccc;
+      border-radius: 24px;
+      transition: .3s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .3s;
+    }
+
+    input:checked + .slider {
+      background-color: var(--sunset-accent);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    input[type="number"] {
+      width: 60px;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #fdfdfd;
+      color: var(--sunset-text);
+    }
+
+    .category-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .category-checkbox {
+      background-color: var(--sunset-bg);
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .category-checkbox:hover {
+      background-color: var(--sunset-hover);
+    }
+
+    .category-checkbox input {
+      margin-right: 5px;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+    }
+
+    button {
+      flex: 1;
+      margin: 0 4px;
+      padding: 8px 10px;
+      border: none;
+      border-radius: 6px;
+      background-color: var(--sunset-accent);
+      color: var(--sunset-text);
+      font-weight: 400;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: var(--sunset-hover);
+    }
+
+    #status {
+      text-align: center;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .success {
+      color: #3C763D;
+    }
+
+    .error {
+      color: #A94442;
+    }
+
+    select {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      color: var(--sunset-text);
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: var(--sunset-accent);
+    }  
+
+    .setting-row-theme {
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .setting-row-theme .section-title {
+      margin: 0;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .setting-row-theme select {
+      width: 150px;
+      margin-left: 10px;
+    }    
+    
+    #audioToggle {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-size: 18px;
+      cursor: pointer;
+      user-select: none;
+      color: var(--sunset-text);
+      transition: opacity 0.3s;
+    }
+    
+    #audioToggle:hover {
+      opacity: 0.7;
+    }    
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>CheerPop!</h2>
+    <p class="tagline">Pop-ups to make you smile 😊</p>
+  </div>
+
+  <div id="audioToggle" title="Toggle Music">
+    🔊
+  </div>
+
+  <div class="section">
+    <div class="setting-row setting-row-theme">
+      <span class="section-title">Set your theme:</span>
+      <select id="songSelect">
+        <option value="yellow" style="background-color:#FFF8E1;">Mellow Yellow</option>
+        <option value="pink" style="background-color:#FFF0F6;">Playful Pink</option>
+        <option value="purple" style="background-color:#F8F3FF;">Perky Purple</option>
+        <option value="blue" style="background-color:#E7F5FF;">Breezy Blue</option>
+        <option value="green" style="background-color:#F0FFF4;">Minty Green</option>
+      </select>
+    </div>
+  </div>  
+  
+  <div class="section">
+    <div class="section-title">Notification Settings</div>
+
+    <div class="setting-row">
+      <span>Enable notifications:</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="enableToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <span>Interval (mins):</span>
+      <input type="number" id="intervalInput" min="1" />
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Preferred Categories</div>
+    <div class="category-options">
+      <label class="category-checkbox">
+        <input type="checkbox" id="factsCategory" checked>
+        🔬 Random Fact
+      </label>
+      <label class="category-checkbox">
+        <input type="checkbox" id="jokeCategory" checked>
+        😂 Jokes
+      </label>
+      <label class="category-checkbox">
+        <input type="checkbox" id="inspirationCategory" checked>
+        ✨ Inspiration
+      </label>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button id="saveBtn">Save</button>
+    <button id="previewBtn">Preview</button>
+  </div>
+  <audio id="cheerSound" src="yellow.mp3" preload="auto"></audio>
+
+  <p id="status"></p>
+
+  <script src="popup.js"></script>
+</body>
+</html>
