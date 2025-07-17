@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
   <meta charset="UTF-8">
   <title>CheerPop!</title>
   <style>
     :root {
-      --sunset-bg: #FFF8E1;
-      --sunset-accent: #FFD966;
-      --sunset-text: #5C3A00;
-      --sunset-card: #FFF3CD;
-      --sunset-hover: #FFE699;
+      --sunset-bg: #FFFFFF;
+      --sunset-accent: #FFFFFF;
+      --sunset-text: #FFFFFF;
+      --sunset-card: #FFFFFF;
+      --sunset-hover: #FFFFFF;
     }
 
     body {
@@ -17,7 +18,7 @@
       margin: 0;
       padding: 15px;
       width: 320px;
-      background-color: var(--sunset-bg);
+      background: var(--sunset-bg);
       color: var(--sunset-text);
     }
 
@@ -218,6 +219,80 @@
     #audioToggle:hover {
       opacity: 0.7;
     }    
+
+    .tab-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 10px;
+  }
+
+  .tab-button {
+    flex: 1;
+    background: var(--sunset-card);
+    border: none;
+    border-radius: 6px;
+    padding: 10px;
+    font-weight: normal;
+    color: var(--sunset-text);
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .tab-button:hover {
+    background-color: var(--sunset-hover);
+  }
+
+  .tab-button.active {
+    background-color: var(--sunset-accent);
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  .favourite-card {
+    background-color: var(--sunset-bg);
+    border: 1px solid var(--sunset-accent);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .delete-btn {
+    background: none;
+    border: none;
+    color: var(--sunset-text);
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: color 0.2s ease;
+  }
+
+  .delete-btn:hover {
+    color: red;
+  }
+
+  .animated-bg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .section > *:not(.animated-bg) {
+    position: relative;
+    z-index: 1;
+  }
+
   </style>
 </head>
 <body>
@@ -225,67 +300,65 @@
     <h2>CheerPop!</h2>
     <p class="tagline">Pop-ups to make you smile 😊</p>
   </div>
-
-  <div id="audioToggle" title="Toggle Music">
-    🔊
+  <div class="tab-buttons">
+    <button class="tab-button active" data-tab="settingsTab">Settings</button>
+    <button class="tab-button" data-tab="favouritesTab">Favourites</button>
   </div>
 
-  <div class="section">
-    <div class="setting-row setting-row-theme">
-      <span class="section-title">Set your theme:</span>
-      <select id="songSelect">
-        <option value="yellow" style="background-color:#FFF8E1;">Mellow Yellow</option>
-        <option value="pink" style="background-color:#FFF0F6;">Playful Pink</option>
-        <option value="purple" style="background-color:#F8F3FF;">Perky Purple</option>
-        <option value="blue" style="background-color:#E7F5FF;">Breezy Blue</option>
-        <option value="green" style="background-color:#F0FFF4;">Minty Green</option>
-      </select>
-    </div>
-  </div>  
-  
-  <div class="section">
-    <div class="section-title">Notification Settings</div>
+  <div id="settingsTab" class="tab-content active">
+    <div class="section">
+      <div class="animated-bg" data-animation="sunrise"></div>
+      <div class="section-title">Notification Settings</div>
 
-    <div class="setting-row">
-      <span>Enable notifications:</span>
-      <label class="toggle-switch">
-        <input type="checkbox" id="enableToggle">
-        <span class="slider"></span>
-      </label>
+      <div class="setting-row">
+        <span>Enable notifications:</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="enableToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <span>Interval (mins):</span>
+        <input type="number" id="intervalInput" min="1" />
+      </div>
     </div>
 
-    <div class="setting-row">
-      <span>Interval (mins):</span>
-      <input type="number" id="intervalInput" min="1" />
+    <div class="section">
+      <div class="section-title">Preferred Categories</div>
+      <div class="category-options">
+        <label class="category-checkbox">
+          <input type="checkbox" id="factsCategory" checked>
+          🔬 Random Fact
+        </label>
+        <label class="category-checkbox">
+          <input type="checkbox" id="jokeCategory" checked>
+          😂 Jokes
+        </label>
+        <label class="category-checkbox">
+          <input type="checkbox" id="inspirationCategory" checked>
+          ✨ Inspiration
+        </label>
+      </div>
     </div>
-  </div>
 
-  <div class="section">
-    <div class="section-title">Preferred Categories</div>
-    <div class="category-options">
-      <label class="category-checkbox">
-        <input type="checkbox" id="factsCategory" checked>
-        🔬 Random Fact
-      </label>
-      <label class="category-checkbox">
-        <input type="checkbox" id="jokeCategory" checked>
-        😂 Jokes
-      </label>
-      <label class="category-checkbox">
-        <input type="checkbox" id="inspirationCategory" checked>
-        ✨ Inspiration
-      </label>
+    <div class="buttons">
+      <button id="saveBtn">Save</button>
+      <button id="previewBtn">Preview</button>
     </div>
   </div>
 
-  <div class="buttons">
-    <button id="saveBtn">Save</button>
-    <button id="previewBtn">Preview</button>
+  <div id="favouritesTab" class="tab-content">
+    <div class="section">
+      <div class="animated-bg" data-animation="sunrise"></div>
+      <div class="section-title" style="text-align: center;">Your Favourites ❤️</div>
+      <ul id="favouritesList" style="padding-left: 16px; font-size: 14px;"></ul>
+    </div>
   </div>
-  <audio id="cheerSound" src="yellow.mp3" preload="auto"></audio>
 
   <p id="status"></p>
 
   <script src="popup.js"></script>
+  <script src="js/lottie.min.js"></script>
 </body>
 </html>

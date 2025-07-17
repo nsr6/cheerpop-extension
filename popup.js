@@ -1,4 +1,21 @@
+const animations = {};
+
 document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tab-button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Toggle active class
+        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Show selected tab content
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.getElementById(btn.dataset.tab).classList.add('active');
+        if (btn.dataset.tab === 'favouritesTab') {
+          renderFavourites();
+        }
+      });
+    });
+
     const enableToggle = document.getElementById('enableToggle');
     const intervalInput = document.getElementById('intervalInput');
     const saveBtn = document.getElementById('saveBtn');
@@ -45,10 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showStatus("Please select at least one category", 'error');
         return;
       }
-
-      const currentTheme = document.getElementById('songSelect').value;
   
-      chrome.storage.sync.set({ enabled, interval, categories, theme: currentTheme }, () => {
+      chrome.storage.sync.set({ enabled, interval, categories }, () => {
         showStatus("Settings saved!", 'success');
         setTimeout(() => window.close(), 2000);
         
@@ -104,94 +119,87 @@ document.addEventListener('DOMContentLoaded', () => {
       );
     });
 
-    window.addEventListener('DOMContentLoaded', () => {    
-      // 🎵 NEW elements
-      const songSelect = document.getElementById('songSelect');
-      const audio      = document.getElementById('cheerSound');
-      const category = document.getElementById('category-options');
+    window.addEventListener('DOMContentLoaded', () => {
       const intervalInput = document.getElementById('intervalInput');
     
-      // 🔶 Palette map  (BG, ACCENT, TEXT, CARD, HOVER)
       const themes = {
-        yellow: ['#FFF8E1', '#FFD966', '#5C3A00', '#FFE8A1', '#FFE699'],
-        pink  : ['#FFF0F6', '#FF80C0', '#55002D', '#FFD1E8', '#FFBBDD'],
-        purple: ['#F8F3FF', '#C0A3FF', '#3B236B', '#DCD2F5', '#D4C4FF'],
-        blue  : ['#E7F5FF', '#6EC1FF', '#00304E', '#C2E4FA', '#A8D9FF'],
-        green : ['#F0FFF4', '#79D99C', '#1F5533', '#D1F7DF', '#A8E8BF']
-      };
-    
-      // Restore saved song/theme
-      chrome.storage.sync.get('theme', ({ theme }) => {
-        const chosen = theme || 'yellow';
-        songSelect.value = chosen;
-        applyTheme(chosen);
-      });
-    
-      // 🔁 Loop audio while popup is open
-      audio.loop   = true;
-      audio.volume = 0.4;
-    
-      // ▶️ Play once user interacts
-      const startAudio = () => {
-        if (!audio.dataset.started) {
-          audio.dataset.started = '1';
-          audio.play().catch(()=>{});
-        }
+        dawn: ['linear-gradient(to bottom, #CCFFFF, #D8E4E9)', '#97c8ec', '#00304E', '#C2E4FA', '#A8D9FF'],
+        morning:   ['#FFFBE6', '#FFE066', '#6B4F00', '#FFF1B8', '#FFE799'],
+        evening: [
+          'url("sunset bg2.png")',
+          '#e6794bff',  
+          '#4A1F0F', 
+          '#FFD2A6', 
+          '#FFC38A'
+        ],        
+        night:     ['#1B1B3A', '#5C4D7D', '#EAEAEA', '#2C2C54', '#3D3D70']
       };
 
-      window.addEventListener('click', startAudio);
-      window.addEventListener('mousemove', startAudio);
+      function getTimeBasedTheme() {
+        const hour = new Date().getHours();
+        if(hour>=4 && hour < 7) return 'dawn';
+        if (hour >= 7 && hour < 16) return 'morning';  
+        if( hour >= 16 && hour < 19) return 'evening';
+        return 'night';               
+      }
+
+
+      const initialTheme = getTimeBasedTheme();
+      applyTheme(initialTheme);
     
-      // 🔄 Change theme & song on dropdown change
-      songSelect.addEventListener('change', () => {
-        const choice = songSelect.value;
-        applyTheme(choice);
-        chrome.storage.sync.set({ theme: choice });
-        startAudio();
-      });
-    
-      // 🖌️ helper
       function applyTheme(key) {
         const [bg, accent, text, card, hover] = themes[key];
         const root = document.documentElement.style;
-        root.setProperty('--sunset-bg',     bg);
+        if (bg.includes('linear-gradient') || bg.includes('url(')) {
+          document.body.style.background = bg;
+          root.setProperty('--sunset-bg', ''); // Clear CSS var to avoid conflicts
+        } else {
+          root.setProperty('--sunset-bg', bg);
+          document.body.style.background = '';
+        }
         root.setProperty('--sunset-accent', accent);
         root.setProperty('--sunset-text',   text);
         root.setProperty('--sunset-card',   card);
         root.setProperty('--sunset-hover',  hover);
     
-        // swap audio src
-        audio.pause();
-        audio.currentTime = 0;
-        audio.src = `${key}.mp3`;
-        if (audio.dataset.started) audio.play().catch(()=>{});
-        songSelect.style.backgroundColor = bg;
-        songSelect.style.color           = text;
         intervalInput.style.backgroundColor = bg;
         intervalInput.style.color = text;
-      }
-    
-      // ⛔ stop music when popup closes
-      window.addEventListener('unload', () => {
-        audio.pause();
-        audio.currentTime = 0;
-      });
-    
-      const audioToggle = document.getElementById('audioToggle');
 
-      let isMuted = false;
-      
-      audioToggle.addEventListener('click', () => {
-        isMuted = !isMuted;
-        audio.muted = isMuted;
-        audioToggle.textContent = isMuted ? '🔇' : '🔊';
-      });  
+        const animMap = {
+          morning: 'sunrise',
+          dawn: 'birds',
+          evening: 'sunset',
+          night: 'moon'
+        };
+
+        const animationName = animMap[key];
+        Object.values(animations).forEach(animList => {
+          animList.forEach(anim => anim.destroy());
+        });
+
+        animations[animationName] = [];
+
+        // Attach animation to each `.animated-bg` separately
+        document.querySelectorAll('.animated-bg').forEach(el => {
+          el.innerHTML = ''; // clear old content
+          el.style.opacity = animationName === 'sunrise' ? '0.35' :
+                       animationName === 'moon'    ? '0.15' : '1';
+          const anim = lottie.loadAnimation({
+            container: el,
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: `${animationName}.json`
+          });
+          animations[animationName].push(anim);
+        });
+      }
     });    
     
     // Helper function to show status messages
     function showStatus(message, type) {
       status.textContent = message;
-      status.className = type; // 'success' or 'error'
+      status.className = type;
       status.style.display = 'block';
       
       // Auto-hide after 3 seconds
@@ -202,6 +210,50 @@ document.addEventListener('DOMContentLoaded', () => {
           status.style.opacity = '1';
         }, 500);
       }, 2000);
+    }
+
+    function renderFavourites() {
+      chrome.storage.sync.get('favourites', ({ favourites }) => {
+        const favList = document.getElementById('favouritesList');
+        if (!favList) return;
+
+        favList.innerHTML = ''; // Clear existing items
+
+        if (favourites && favourites.length) {
+          favourites.slice().reverse().forEach((fav, index) => {
+            const li = document.createElement('li');
+            li.className = 'favourite-card';
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = `${fav.text}`;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.title = 'Remove';
+            deleteBtn.addEventListener('click', () => {
+              removeFavourite(index);
+            });
+
+            li.appendChild(textSpan);
+            li.appendChild(deleteBtn);
+            favList.appendChild(li);
+          });
+        } else {
+          favList.innerHTML = '<li>No favourites yet.</li>';
+        }
+      });
+    }
+
+    function removeFavourite(indexToRemove) {
+      chrome.storage.sync.get('favourites', ({ favourites }) => {
+        if (!favourites || favourites.length === 0) return;
+
+        favourites.splice(favourites.length - 1 - indexToRemove, 1); // Reverse order
+        chrome.storage.sync.set({ favourites }, () => {
+          renderFavourites(); // Refresh the list
+        });
+      });
     }
   });
   

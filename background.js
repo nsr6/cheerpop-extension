@@ -1,7 +1,8 @@
 importScripts('facts.js');
 
+const lastShownFact = {};
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.set({ interval: 60, enabled: true }); // Default: every 60 mins
+  chrome.storage.sync.set({ interval: 60, enabled: true });
   scheduleAlarm(60);
 });
 
@@ -24,17 +25,18 @@ chrome.alarms.onAlarm.addListener(async () => {
       
       chrome.notifications.create(notificationId, {
         type: 'basic',
-        iconUrl: 'icon.png',
+        iconUrl: 'icon128.png',
         title: `😊 ${cat} Time! 😊`,
         message: fact,
-        priority: 2, // 0 to 2, with 2 being highest priority
-        requireInteraction: false, // Notification won't auto-dismiss
+        priority: 2,
+        requireInteraction: false,
         buttons: [
-          { title: 'Thanks for the smile!' },
+          { title: 'Add to Favourites' },
           { title: 'Show me another' }
         ],
         contextMessage: 'Click for more options'
       });
+      lastShownFact[notificationId] = { text: fact, category: cat };
   });
   
 // Handle messages from popup
@@ -53,21 +55,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       chrome.notifications.create(notificationId, {
         type: 'basic',
-        iconUrl: 'icon.png',
+        iconUrl: 'icon128.png',
         title: `😊 ${category} Preview! 😊`,
         message: fact,
         priority: 2,
         requireInteraction: false,
         buttons: [
-          { title: 'Thanks for the smile!' },
+          { title: 'Add to Favourites' },
           { title: 'Show me another' }
         ],
         contextMessage: 'Preview notification'
       });
-
+      lastShownFact[notificationId] = { text: fact, category };
       sendResponse({ success: true });
     })();
-
     return true;
   }
 });
@@ -94,18 +95,25 @@ chrome.notifications.onButtonClicked.addListener(async (notificationId, buttonIn
     
     chrome.notifications.create(newNotificationId, {
       type: 'basic',
-      iconUrl: 'icon.png',
+      iconUrl: 'icon128.png',
       title: '😊 Another Smile! 😊',
       message: newFact,
       priority: 2,
       requireInteraction: false,
       buttons: [
-        { title: 'Thanks for the smile!' },
+        { title: 'Add to Favourites' },
         { title: 'Show me another' }
       ],
       contextMessage: 'Click for more options'
     });
-  } else { // "Thanks for the smile!" button
+    lastShownFact[newNotificationId] = { text: newFact, category };
+  } else if (buttonIndex === 0) { // "Add to Favourites"
+    const saved = lastShownFact[notificationId];
+    if (saved) {
+      const { favourites = [] } = await chrome.storage.sync.get('favourites');
+      favourites.push({ ...saved, time: Date.now() });
+      await chrome.storage.sync.set({ favourites });
+    }
     chrome.notifications.clear(notificationId);
   }
 });
@@ -118,7 +126,7 @@ chrome.notifications.onClicked.addListener((notificationId) => {
   const categoryNotificationId = 'smile-categories-' + Date.now();
   chrome.notifications.create(categoryNotificationId, {
     type: 'basic',
-    iconUrl: 'icon.png',
+    iconUrl: 'icon128.png',
     title: '😊 Choose a Category 😊',
     message: 'What kind of pop-up would you like to see?',
     priority: 2,
@@ -153,17 +161,18 @@ chrome.notifications.onButtonClicked.addListener(async(notificationId, buttonInd
       
       chrome.notifications.create(newNotificationId, {
         type: 'basic',
-        iconUrl: 'icon.png',
+        iconUrl: 'icon128.png',
         title: `😊 ${category} Fact 😊`,
         message: fact,
         priority: 2,
         requireInteraction: false,
         buttons: [
-          { title: 'Thanks for the smile!' },
+          { title: 'Add to Favourites' },
           { title: 'Show me another' }
         ],
         contextMessage: `${category} category - Click for more options`
       });
+      lastShownFact[newNotificationId] = { text: fact, category };
     }
   }
 });
